@@ -13,10 +13,9 @@ class Student(db.Model, SerializerMixin):
 
     grades = db.relationship('Grade', back_populates='student', cascade='all, delete-orphan')
 
-    assignments = association_proxy('grades', 'assignment',
-                                    creator=lambda assignment_obj: Grade(assignment=assignment_obj))
+    assignments = db.relationship('Assignment', secondary='grades', back_populates='students')
 
-    serialize_rules = ('-grades',)
+    serialize_rules = ('-grades.student', '-assignments.students',)
 
     @validates('name')
     def validate_name(self, key, name):
@@ -34,7 +33,7 @@ class Grade(db.Model, SerializerMixin):
     score = db.Column(db.Integer)
 
     student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
-    assignment_id = db.Column(db.Integer, db. ForeignKey('assignments.id'), nullable=False)
+    assignment_id = db.Column(db.Integer, db.ForeignKey('assignments.id'), nullable=False)
 
     student = db.relationship('Student', back_populates='grades')
     assignment = db.relationship('Assignment', back_populates='grades')
@@ -62,10 +61,9 @@ class Assignment(db.Model, SerializerMixin):
 
     grades = db.relationship('Grade', back_populates='assignment', cascade='all, delete-orphan')
 
-    students = association_proxy('grades', 'student',
-                                 creator=lambda student_obj: Grade(student=student_obj))
+    students = db.relationship('Student', secondary='grades', back_populates='assignments')
 
-    serialize_rules = ('-grades',)
+    serialize_rules = ('-grades.assignment', '-students.assignments',)
 
     @validates('title')
     def validate_title(self, key, title):

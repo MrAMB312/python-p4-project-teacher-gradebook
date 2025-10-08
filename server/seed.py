@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
         print('Creating assignments...')
 
-        bellringer = Assignment(title='Weekend Survey', category='bellringer', total_points=1)
+        bellringer = Assignment(title='Weekend Survey', category='bellringer', total_points=2)
         homework = Assignment(title='Exponents Review', category='homework', total_points=5)
         quiz = Assignment(title='Expressions and Equations Quiz', category='quiz', total_points=20)
         final = Assignment(title='Algebra Final', category='test', total_points=100)
@@ -38,10 +38,11 @@ if __name__ == '__main__':
 
         print('Creating grades...')
         
-        jb = Grade(student=jessica, assignment=bellringer, score=1)
+        jb1 = Grade(student=jessica, assignment=bellringer, score=1)
         jh = Grade(student=jessica, assignment=homework, score=5)
         jq = Grade(student=jessica, assignment=quiz, score=20)
         jf = Grade(student=jessica, assignment=final, score=97)
+        jb2 = Grade(student=jessica, assignment=bellringer, score=2)
 
         kb = Grade(student=katie, assignment=bellringer, score=1)
         kh = Grade(student=katie, assignment=homework, score=4)
@@ -53,7 +54,7 @@ if __name__ == '__main__':
         mq = Grade(student=marvin, assignment=quiz, score=14)
         mf = Grade(student=marvin, assignment=final, score=68)
 
-        grades = [jb, jh, jq, jf, kb, kh, kq, kf, mb, mh, mq, mf]
+        grades = [jb1, jh, jq, jf, jb2, kb, kh, kq, kf, mb, mh, mq, mf]
 
         db.session.add_all(students)
         db.session.add_all(assignments)

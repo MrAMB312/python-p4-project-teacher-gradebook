@@ -2,9 +2,12 @@
 
 ## Overview
 
-Teacher Gradebook is a full-stack web application that allows teachers to create students and assignments, track scores, and update grades in real time.
+Teacher Gradebook is a full-stack web application that allows teachers to:
+- Create and manage students
+- Create and manage assignments
+- Track student scores and update greades
 
-The backend is built with Flask and provides a RESTful API, while the frontend is built with React and uses Formik for form handling and validation.
+The backend is built with Flask and provides a RESTful API, while the frontend is built with React and uses Formik and Yup for form handling and validation.
 
 This project demonstrates full CRUD funcitonality, one-to-many and many-to-many relationships, form validation, and React Router for navigation.
 
@@ -48,25 +51,28 @@ npm start
 
 ### Relationships
 
-- One-to-many: `Student` > `Grades`, `Assignment` > `Grades`
-- Many-to-many: `Students` <-> `Assignments` (through `Grades`)
+- One-to-many:
+  - `Student` > `Grades`
+  - `Assignment` > `Grades`
+- Many-to-many:
+  - `Students` <-> `Assignments` (through `Grades`)
 
 ---
 
 ## Routes
 
-- `/students`
-  - `GET`: list all students
-  - `POST`: create a student
-- `/assignments`
-  - `GET`: list all assignments
-  - `POST`: create an assignment
-- `/students/<id>/grades`
-  - `GET`: list all grades belonging to existing student
-  - `POST`: create a new grade for existing student
+- Students
+  - `GET /students`: list all students
+  - `POST /students`: create a student
+- Assignments
+  - `GET /assignments`: list all assignments
+  - `POST /assignments`: create an assignment
+- Grades
+  - `GET /students/<student_id>/assignments/<assignment_id>/grades`: list grades for a student for a specific assignment
+  - `POST /students<student_id>/assignments/<assignment_id>/grades`: add a grade for a student for a specific assignment
 - `/students/<id>/grades/<id>`
-  - `PATCH`: update existing grade for student
-  - `DELETE`: delete existing grade for student
+  - `PATCH /students/<student_id>/grades/<grade_id>`: update existing grade for student
+  - `DELETE /students/<student_id>/grades/<grade_id>`: delete existing grade for student
 
   ---
 
@@ -74,28 +80,26 @@ npm start
 
   ### Routes (React Router)
 
-  - `/students` - view all students and add a new student
+  - `/` - Home page with instructions
+  - `/students` - view all students, add a new student, and manage their grades
   - `/assignemnts` - view all assignments and add a new assignment
-  - `/` - Home page
 
   ### Components
 
   - `StudentList.js`
     - Displays all students
     - Uses Formik to add new students with validation
-    - Allows selecting a student to view their grades
+    - Select a student to view and manage grades
   - `AssignmentList.js`
     - Displays all assignments
     - Uses Formik to add new assignments with validation
   - `StudentGrades.js`
     - Shows all grades for a selected student
-    - Add new grade using Formik
-    - Edit grade using Formik
-    - Delete grade
-  - App.js
+    - Add, edit, and delete grades
+  - `App.js`
     - Parent component that is rendered in index.js
   - `NavBar.js`
-    - Links that point to `Home.js`, `StudentList.js`, and `AssignmentList.js`
+    - Links that point to `Home`, `Student List`, and `Assignment List`
   - `Home.js`
     - Home page for application that lists instructions
 
@@ -118,6 +122,8 @@ npm start
 
   2. Navigate to `/assignments` and add a new assignment.
 
-  3. Select a student and add a grade for a specific assignment.
+  3. Select a student to view their grades.
 
-  4. Update or delete an exisitng grade.
+  4. Add a new grade for a specific assigment.
+
+  5. Edit or delete an existing grade.

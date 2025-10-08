@@ -1,42 +1,25 @@
-import { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import * as yup from "yup";
 
-function AssignmentList() {
-    const [assignments, setAssignments] = useState([]);
-    const [refreshPage, setRefreshPage] = useState(false);
+function AssignmentList({ assignments, addAssignment }) {
+  const formSchema = yup.object().shape({
+    title: yup.string().required("Title required."),
+    category: yup.string().required("Category required."),
+    total_points: yup.number().positive().integer().required("Total points required."),
+  });
 
-    useEffect(() => {
-        fetch("http://localhost:5555/assignments")
-            .then(r => r.json())
-            .then(data => setAssignments(data));
-    }, [refreshPage]);
-
-    const formSchema = yup.object().shape({
-        title: yup.string().required("Title required."),
-        category: yup.string().required("Category required."),
-        total_points: yup.number().positive().integer().required("Total points required.")
-    });
-
-    const formik = useFormik({
-        initialValues: { title: "", category: "", total_points: "" },
-        validationSchema: formSchema,
-        onSubmit: (values, { resetForm }) => {
-            fetch("http://localhost:5555/assignments", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(values),
-            }).then(res => {
-                if (res.ok) setRefreshPage(!refreshPage);
-            });
-            resetForm();
-        }
-    })
+  const formik = useFormik({
+    initialValues: { title: "", category: "", total_points: "" },
+    validationSchema: formSchema,
+    onSubmit: (values, { resetForm }) => {
+      addAssignment(values);
+      resetForm();
+    }
+  });
 
     return (
         <div>
             <h1>Assignment List</h1>
-            
             <form onSubmit={formik.handleSubmit}>
                 <input
                     name="title"
@@ -45,7 +28,6 @@ function AssignmentList() {
                     placeholder="Title"
                 />
                 <p style={{ color: "red" }}>{formik.errors.title}</p>
-                
                 <input 
                     name="category"
                     onChange={formik.handleChange}
@@ -53,7 +35,6 @@ function AssignmentList() {
                     placeholder="Category"
                 />
                 <p style={{ color: "red" }}>{formik.errors.category}</p>
-
                 <input 
                     name="total_points"
                     type="number"
@@ -62,7 +43,6 @@ function AssignmentList() {
                     placeholder="Total Points"
                 />
                 <p style={{ color: "red" }}>{formik.errors.total_points}</p>
-
                 <button type="submit">Add Assignment</button>
             </form>
 
