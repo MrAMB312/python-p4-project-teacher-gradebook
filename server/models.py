@@ -12,14 +12,30 @@ class Student(db.Model, SerializerMixin):
     name = db.Column(db.String, nullable=False)
 
     grades = db.relationship('Grade', back_populates='student', cascade='all, delete-orphan')
+    assignments = association_proxy('grades', 'assignment',
+                                    creator=lambda assignment_obj: Grade(assignment=assignment_obj))
 
-    assignments = db.relationship('Assignment', secondary='grades', back_populates='students')
+    serialize_rules = ('-grades.student',)
 
-    serialize_rules = ('-grades.student', '-assignments.students',)
+    def to_nested_dict(self):
+        assignments_dict = {}
+        for grade in self.grades:
+            assignments_dict[grade.assignment.id] = {
+                "id": grade.assignment.id,
+                "title": grade.assignment.title,
+                "category": grade.assignment.category,
+                "total_points": grade.assignment.total_points,
+                "grade": grade.score
+            }
+        return {
+            "id": self.id,
+            "name": self.name,
+            "assignments": list(assignments_dict.values())
+        }
 
     @validates('name')
     def validate_name(self, key, name):
-        if name is None:
+        if not name:
             raise ValueError('Invalid student name.')
         return name
 
@@ -60,20 +76,20 @@ class Assignment(db.Model, SerializerMixin):
     total_points = db.Column(db.Integer, nullable=False)
 
     grades = db.relationship('Grade', back_populates='assignment', cascade='all, delete-orphan')
+    students = association_proxy('grades', 'student',
+                                 creator=lambda student_obj: Grade(student=student_obj))
 
-    students = db.relationship('Student', secondary='grades', back_populates='assignments')
-
-    serialize_rules = ('-grades.assignment', '-students.assignments',)
+    serialize_rules = ('-grades.assignment',)
 
     @validates('title')
     def validate_title(self, key, title):
-        if title is None:
+        if not title:
             raise ValueError('Invalid assignment title.')
         return title
     
     @validates('category')
     def validate_category(self, key, category):
-        if category is None:
+        if not category:
             raise ValueError('Invalid assignment category.')
         return category
     

@@ -1,59 +1,46 @@
-import { useState } from "react";
-import StudentGrades from "./StudentGrades";
-import { useFormik } from "formik";
-import * as yup from "yup";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
-function StudentList({ students, assignments, addStudent, addGrade, editGrade, deleteGrade }) {
-  const [selectedStudent, setSelectedStudent] = useState(null);
+function StudentList({ students, setStudents }) {
+  const [name, setName] = useState("");
 
-  const formSchema = yup.object().shape({
-    name: yup.string().required("Name is required.")
-  });
-
-  const formik = useFormik({
-    initialValues: { name: "" },
-    validationSchema: formSchema,
-    onSubmit: (values, { resetForm }) => {
-      addStudent(values);
-      resetForm();
-    }
-  });
+  const handleAddStudent = (e) => {
+    e.preventDefault();
+    fetch("/students", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    })
+      .then(res => res.json())
+      .then(newStudent => {
+        setStudents([...students, { ...newStudent, assignments: [] }]);
+        setName("");
+      });
+  };
 
   return (
     <div>
-      <h1>Student List</h1>
+      <h2>Students</h2>
 
-      <form onSubmit={formik.handleSubmit}>
+      {/* Add Student Form */}
+      <form onSubmit={handleAddStudent}>
         <input
-          name="name"
-          onChange={formik.handleChange}
-          value={formik.values.name}
-          placeholder="New Student"
+          placeholder="Student Name"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          required
         />
-        <p style={{ color: "red" }}>{formik.errors.name}</p>
         <button type="submit">Add Student</button>
       </form>
 
+      {/* Student List as Links */}
       <ul>
-        {students.map((s) => (
+        {students.map(s => (
           <li key={s.id}>
-            {s.name}{" "}
-            <button onClick={() => setSelectedStudent(s)}>
-              View Grades
-            </button>
+            <Link to={`/students/${s.id}`}>{s.name}</Link>
           </li>
         ))}
       </ul>
-
-      {selectedStudent && (
-        <StudentGrades
-          student={selectedStudent}
-          assignments={assignments}
-          onAddGrade={addGrade}
-          onEditGrade={editGrade}
-          onDeleteGrade={deleteGrade}
-        />
-      )}
     </div>
   );
 }
