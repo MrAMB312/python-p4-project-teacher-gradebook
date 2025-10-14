@@ -1,113 +1,65 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
+import GradeForm from "./GradeForm";
 
 function StudentAssignments({ match, students, setStudents, assignments, setAssignments }) {
   const studentId = parseInt(match.params.studentId);
-  const student = students.find(s => s.id === studentId);
-
-  const [newAssignmentId, setNewAssignmentId] = useState("");
-  const [newAssignmentCategory, setNewAssignmentCategory] = useState("");
-  const [newScore, setNewScore] = useState("");
+  const student = students.find((s) => s.id === studentId);
 
   if (!student) return <p>Student not found</p>;
 
-  const handleAddGrade = (e) => {
-    e.preventDefault();
+  const studentAssignments = student.assignments || [];
+  const uniqueCategories = studentAssignments.reduce((acc, a) => {
+    if (!acc.includes(a.category)) acc.push(a.category);
+    return acc;
+  }, []);
 
-    let assignmentIdToUse = newAssignmentId;
+  // Update student state when a grade is added
+  const handleAddGrade = (assignment, newGrade) => {
+    const updatedStudents = students.map((s) => {
+      if (s.id === student.id) {
+        const existingAssignment = s.assignments.find(a => a.id === assignment.id);
 
-    // If teacher entered a new assignment category
-    if (newAssignmentCategory.trim()) {
-      fetch("/assignments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: newAssignmentCategory, // simple MVP: title = category
-          category: newAssignmentCategory,
-          total_points: 1 // default points; can be edited later
-        }),
-      })
-        .then(res => res.json())
-        .then(newAssignment => {
-          // Add new assignment to global assignments
-          setAssignments([...assignments, newAssignment]);
-          assignmentIdToUse = newAssignment.id;
-
-          // Add grade for student
-          addGradeToStudent(assignmentIdToUse);
-        });
-    } else {
-      addGradeToStudent(assignmentIdToUse);
-    }
-  };
-
-  const addGradeToStudent = (assignmentIdToUse) => {
-    fetch("/grades", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        student_id: student.id,
-        assignment_id: parseInt(assignmentIdToUse),
-        score: parseInt(newScore)
-      })
-    })
-      .then(res => res.json())
-      .then(newGrade => {
-        const updatedStudents = students.map(s => {
-          if (s.id === student.id) {
-            const assignment = assignments.find(a => a.id === parseInt(assignmentIdToUse)) || { id: parseInt(assignmentIdToUse), category: newAssignmentCategory };
-            s.assignments.push({
-              ...assignment,
-              grade: newGrade.score,
-              id: newGrade.id,
-            });
-          }
-          return s;
-        });
-        setStudents(updatedStudents);
-        setNewAssignmentId("");
-        setNewAssignmentCategory("");
-        setNewScore("");
-      });
+        if (existingAssignment) {
+          existingAssignment.grades = existingAssignment.grades || [];
+          existingAssignment.grades.push(newGrade);
+        } else {
+          // New assignment
+          s.assignments = [...s.assignments, { ...assignment, grades: [newGrade] }];
+        }
+      }
+      return s;
+    });
+    setStudents(updatedStudents);
   };
 
   return (
     <div>
       <h2>{student.name}'s Assignments</h2>
-      <ul>
-        {student.assignments.map((a) => (
-          <li key={a.id}>
-            <Link to={`/students/${studentId}/assignments/${a.id}`}>
-              {a.category}
-            </Link>
-          </li>
-        ))}
-      </ul>
 
-      <h3>Add Grade</h3>
-      <form onSubmit={handleAddGrade}>
-        <select value={newAssignmentId} onChange={e => setNewAssignmentId(e.target.value)}>
-          <option value="">Select Assignment</option>
-          {assignments.map(a => (
-            <option key={a.id} value={a.id}>{a.category}</option>
+      {uniqueCategories.length > 0 ? (
+        <ul>
+          {uniqueCategories.map((category) => (
+            <li key={category}>
+              <Link to={`/students/${student.id}/assignments/${category}`}>
+                {category}
+              </Link>
+            </li>
           ))}
-        </select>
-        <span> or add new category: </span>
-        <input
-          type="text"
-          placeholder="New Assignment Category"
-          value={newAssignmentCategory}
-          onChange={e => setNewAssignmentCategory(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Score"
-          value={newScore}
-          onChange={e => setNewScore(e.target.value)}
-          required
-        />
-        <button type="submit">Add Grade</button>
-      </form>
+        </ul>
+      ) : (
+        <p>No assignments found.</p>
+      )}
+
+      <hr />
+      <h3>Add a Grade</h3>
+
+      <GradeForm
+        studentId={student.id}
+        assignments={assignments}
+        onAddGrade={handleAddGrade}
+        setAssignments={setAssignments}
+      />
     </div>
   );
 }

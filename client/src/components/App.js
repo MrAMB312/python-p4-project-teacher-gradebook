@@ -12,7 +12,6 @@ function App() {
   const [students, setStudents] = useState([]);
   const [assignments, setAssignments] = useState([]);
 
-  // Fetch students and assignments once
   useEffect(() => {
     fetch("/students")
       .then(res => res.json())
@@ -26,6 +25,7 @@ function App() {
   return (
     <div>
       <NavBar />
+      <hr />
       <Switch>
         <Route exact path="/" component={Home} />
         <Route
@@ -58,7 +58,9 @@ function App() {
             <StudentAssignments
               {...props}
               students={students}
+              setStudents={setStudents}
               assignments={assignments}
+              setAssignments={setAssignments}
             />
           )}
         />
@@ -70,7 +72,6 @@ function App() {
               {...props}
               students={students}
               setStudents={setStudents}
-              assignments={assignments}
             />
           )}
         />

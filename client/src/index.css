@@ -1,7 +1,34 @@
-:root {
-  --bg: #282c34;
-  --header: #fff;
-  --link: #61dafb;
-  --text: hsla(0, 0%, 100%, 0.88);
+/* Stack input fields and center them */
+input, select, button {
+  display: block;
+  margin: 8px auto;
 }
 
+/* Center headings, labels, paragraphs */
+h1, h2, h3, h4, h5, h6, label, p {
+  text-align: center;
+}
+
+/* Center and stack lists */
+ul, ol {
+  list-style: none;   /* removes bullets/numbers */
+  padding-left: 0;
+  margin-left: 0;
+  text-align: center;
+}
+
+ul li, ol li {
+  margin: 4px 0;
+}
+
+/* Minimal spacing for assignments list above form */
+.assignments-list {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;       /* make the whole label a block */
+  text-align: center;   /* center the text inside the label */
+  margin: 8px auto;     /* vertical spacing */
+}
