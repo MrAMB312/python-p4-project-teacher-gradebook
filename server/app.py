@@ -53,15 +53,13 @@ class Assignments(Resource):
         
         data = request.get_json()
 
-        title = data['title']
         category = data['category']
         total_points = data['total_points']
 
-        if not title or not category or total_points is None:
+        if not category or total_points is None:
             return { 'errors': ['validation errors'] }, 400
 
         new_assignment = Assignment(
-            title=title,
             category=category,
             total_points=total_points
         )
@@ -73,27 +71,29 @@ class Assignments(Resource):
         return response
     
 class Grades(Resource):
-    def get(self, student_id, assignment_id):
-        
-        grades = [grade.to_dict() for grade in Grade.query.filter_by(student_id=student_id, assignment_id=assignment_id).all()]
-        response = make_response(grades, 200)
-        return response
-
     def post(self):
 
         data = request.get_json()
 
         score = data['score']
+        title = data['title']
         student_id = data['student_id']
         assignment_id = data['assignment_id']
 
-        if score is None or student_id is None or assignment_id is None:
+        if score is None or not title or student_id is None or assignment_id is None:
             return { 'errors': ['validation errors'] }, 400
+
+        student = Student.query.get(student_id)
+        assignment = Assignment.query.get(assignment_id)
+
+        if not student or not assignment:
+            return { 'errors': ['Student or Assignment not found.'] }, 404
 
         new_grade = Grade(
             score=score,
-            student_id=student_id,
-            assignment_id=assignment_id
+            title=title,
+            student=student,
+            assignment=assignment
         )
 
         db.session.add(new_grade)
@@ -102,6 +102,7 @@ class Grades(Resource):
         response = make_response(new_grade.to_dict(), 201)
         return response
 
+class GradeById(Resource):
     def patch(self, grade_id):
 
         data = request.get_json()
@@ -118,7 +119,7 @@ class Grades(Resource):
         for attr in request.json:
             setattr(grade, attr, data[attr])
 
-        db.session.add(grade)
+        grade.score = score
         db.session.commit()
 
         response = make_response(grade.to_dict(), 202)
@@ -136,10 +137,21 @@ class Grades(Resource):
 
         response = make_response('', 204)
         return response
+    
+class GradeByStudentAssignment(Resource):
+    def get(self, student_id, assignment_id):
+        grade = Grade.query.filter_by(student_id=student_id, assignment_id=assignment_id).all()
+        if not grade:
+            return { 'error': 'Grade not found.' }, 404
+        
+        response = make_response(grade, 200)
+        return response
 
 api.add_resource(Students, '/students')
 api.add_resource(Assignments, '/assignments')
-api.add_resource(Grades, '/grades/<int:student_id>/<int:assignment_id>')
+api.add_resource(Grades, '/grades')
+api.add_resource(GradeById, '/grades/<int:grade_id>')
+api.add_resource(GradeByStudentAssignment, '/grades/<int:student_id>/<int:assignment_id>')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

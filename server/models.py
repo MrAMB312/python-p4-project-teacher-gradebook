@@ -20,13 +20,19 @@ class Student(db.Model, SerializerMixin):
     def to_nested_dict(self):
         assignments_dict = {}
         for grade in self.grades:
-            assignments_dict[grade.assignment.id] = {
-                "id": grade.assignment.id,
-                "title": grade.assignment.title,
-                "category": grade.assignment.category,
-                "total_points": grade.assignment.total_points,
-                "grade": grade.score
-            }
+            if grade.assignment.id not in assignments_dict:
+                assignments_dict[grade.assignment.id] = {
+                    "id": grade.assignment.id,
+                    "title": grade.title,
+                    "category": grade.assignment.category,
+                    "total_points": grade.assignment.total_points,
+                    "grades": []
+                }
+            assignments_dict[grade.assignment.id]["grades"].append({
+                "id": grade.id,
+                "score": grade.score,
+                "title": grade.title
+            })
         return {
             "id": self.id,
             "name": self.name,
@@ -46,6 +52,7 @@ class Grade(db.Model, SerializerMixin):
     __tablename__ = "grades"
 
     id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String, nullable=False)
     score = db.Column(db.Integer)
 
     student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
@@ -56,6 +63,12 @@ class Grade(db.Model, SerializerMixin):
 
     serialize_rules = ('-student.grades', '-assignment.grades',)
 
+    @validates('title')
+    def validate_title(self, key, title):
+        if not title:
+            raise ValueError('Invalid assignment title.')
+        return title
+    
     @validates('score')
     def validate_student_score(self, key, score):
         if score is None:
@@ -65,13 +78,12 @@ class Grade(db.Model, SerializerMixin):
         return score
 
     def __repr__(self):
-        return f"<Grade {self.id}, Score: {self.score}, Student: {self.student.name}, Assignment: {self.assignment.title}>"
+        return f"<Grade {self.id}, Title: {self.title}, Score: {self.score}, Student: {self.student.name}, Assignment Category: {self.assignment.title}>"
 
 class Assignment(db.Model, SerializerMixin):
     __tablename__ = 'assignments'
 
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String, nullable=False)
     category = db.Column(db.String, nullable=False)
     total_points = db.Column(db.Integer, nullable=False)
 
@@ -80,12 +92,6 @@ class Assignment(db.Model, SerializerMixin):
                                  creator=lambda student_obj: Grade(student=student_obj))
 
     serialize_rules = ('-grades.assignment',)
-
-    @validates('title')
-    def validate_title(self, key, title):
-        if not title:
-            raise ValueError('Invalid assignment title.')
-        return title
     
     @validates('category')
     def validate_category(self, key, category):
@@ -102,4 +108,4 @@ class Assignment(db.Model, SerializerMixin):
         return total_points
     
     def __repr__(self):
-        return f"<Assignment {self.id}, {self.title}, Category: {self.category}, Total Points: {self.total_points}>"
+        return f"<Assignment {self.id}, Category: {self.category}, Total Points: {self.total_points}>"

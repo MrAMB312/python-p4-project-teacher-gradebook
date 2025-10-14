@@ -29,29 +29,29 @@ if __name__ == '__main__':
 
         print('Creating assignments...')
 
-        bellringer = Assignment(title='Weekend Survey', category='bellringer', total_points=2)
-        homework = Assignment(title='Exponents Review', category='homework', total_points=5)
-        quiz = Assignment(title='Expressions and Equations Quiz', category='quiz', total_points=20)
-        final = Assignment(title='Algebra Final', category='test', total_points=100)
+        bellringer = Assignment(category='bellringer', total_points=2)
+        homework = Assignment(category='homework', total_points=5)
+        quiz = Assignment(category='quiz', total_points=20)
+        final = Assignment(category='test', total_points=100)
         
         assignments = [bellringer, homework, quiz, final]
 
         print('Creating grades...')
         
-        jb = Grade(student=jessica, assignment=bellringer, score=1)
-        jh = Grade(student=jessica, assignment=homework, score=5)
-        jq = Grade(student=jessica, assignment=quiz, score=20)
-        jf = Grade(student=jessica, assignment=final, score=97)
+        jb = Grade(student=jessica, assignment=bellringer, score=1, title='Weekend Survey')
+        jh = Grade(student=jessica, assignment=homework, score=5, title='Exponents Review')
+        jq = Grade(student=jessica, assignment=quiz, score=20, title='Expressions and Equations Quiz')
+        jf = Grade(student=jessica, assignment=final, score=97, title='Algebra Final')
 
-        kb = Grade(student=katie, assignment=bellringer, score=1)
-        kh = Grade(student=katie, assignment=homework, score=4)
-        kq = Grade(student=katie, assignment=quiz, score=17)
-        kf = Grade(student=katie, assignment=final, score=84)
+        kb = Grade(student=katie, assignment=bellringer, score=1, title='Weekend Survey')
+        kh = Grade(student=katie, assignment=homework, score=4, title='Exponents Review')
+        kq = Grade(student=katie, assignment=quiz, score=17, title='Expressions and Equations Quiz')
+        kf = Grade(student=katie, assignment=final, score=84, title='Algebra Final')
 
-        mb = Grade(student=marvin, assignment=bellringer, score=0)
-        mh = Grade(student=marvin, assignment=homework, score=3)
-        mq = Grade(student=marvin, assignment=quiz, score=14)
-        mf = Grade(student=marvin, assignment=final, score=68)
+        mb = Grade(student=marvin, assignment=bellringer, score=0, title='Weekend Survey')
+        mh = Grade(student=marvin, assignment=homework, score=3, title='Exponents Review')
+        mq = Grade(student=marvin, assignment=quiz, score=14, title='Expressions and Equations Quiz')
+        mf = Grade(student=marvin, assignment=final, score=68, title='Algebra Final')
 
         grades = [jb, jh, jq, jf, kb, kh, kq, kf, mb, mh, mq, mf]
 
