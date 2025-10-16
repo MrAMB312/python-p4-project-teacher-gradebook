@@ -6,10 +6,14 @@ function GradesList({ match, students, setStudents }) {
   const [editScoreValue, setEditScoreValue] = useState("");
 
   const studentId = parseInt(match.params.studentId);
-  const category = match.params.assignmentId; // category from route
+  const assignmentId = parseInt(match.params.assignmentId);
 
   const student = students.find((s) => s.id === studentId);
   if (!student) return <p>Student not found</p>;
+
+  const assignment = student.assignments.find((a) => a.id === assignmentId);
+  const category = assignment ? assignment.category : "Unknown";
+
 
   // Only show assignments for this category
   const assignmentsInCategory = (student.assignments || []).filter(

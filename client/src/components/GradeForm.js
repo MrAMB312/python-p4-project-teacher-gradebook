@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import { useFormik } from "formik";
 import * as yup from "yup";
 
-function GradeForm({ studentId, assignments = [], onAddGrade, setAssignments }) {
-  const [mode, setMode] = useState(null); // "existing" | "new"
+function GradeForm({ studentId, assignments = [], onAddGrade, setAssignments, fixedAssignment = null }) {
+  const [mode, setMode] = useState(fixedAssignment ? "fixed" : null)
 
   const formik = useFormik({
     initialValues: {
-      assignmentId: "",
-      category: "",
-      totalPoints: "",
+      assignmentId: fixedAssignment ? fixedAssignment.id : "",
+      category: fixedAssignment ? fixedAssignment.category : "",
+      totalPoints: fixedAssignment ? fixedAssignment.total_points : "",
       title: "",
       score: "",
     },
@@ -21,22 +21,25 @@ function GradeForm({ studentId, assignments = [], onAddGrade, setAssignments }) 
         .min(0, "Score must be >= 0")
         .required("Must enter a score"),
       assignmentId: yup.number().when("mode", {
-        is: "existing",
+        is: (m) => m !== "fixed" && m === "existing",
         then: yup.number().required("Must select an assignment"),
       }),
       category: yup.string().when("mode", {
-        is: "new",
+        is: (m) => m !== "fixed" && m === "new",
         then: yup.string().required("Must enter a category").max(50),
       }),
       totalPoints: yup.number().when("mode", {
-        is: "new",
+        is: (m) => m !== "fixed" && m === "new",
         then: yup.number().integer().positive().required("Must enter total points"),
       }),
     }),
     onSubmit: async (values) => {
       let assignment;
 
-      if (mode === "existing") {
+      if (fixedAssignment) {
+        // Use the assignment passed from GradesList
+        assignment = fixedAssignment;
+      } else if (mode === "existing") {
         assignment = assignments.find(a => a.id === parseInt(values.assignmentId));
       } else if (mode === "new") {
         const res = await fetch("/assignments", {
@@ -65,13 +68,14 @@ function GradeForm({ studentId, assignments = [], onAddGrade, setAssignments }) 
       onAddGrade(assignment, newGrade);
 
       formik.resetForm();
-      setMode(null);
+      if (!fixedAssignment) setMode(null);
     },
   });
 
   return (
     <form onSubmit={formik.handleSubmit}>
-      {!mode && (
+      {/* Only show assignment creation options when NOT fixed */}
+      {!fixedAssignment && !mode && (
         <div>
           <button type="button" onClick={() => setMode("existing")}>
             Select Existing Assignment
@@ -82,7 +86,7 @@ function GradeForm({ studentId, assignments = [], onAddGrade, setAssignments }) 
         </div>
       )}
 
-      {mode === "existing" && (
+      {!fixedAssignment && mode === "existing" && (
         <label>
           Assignment:
           <select
@@ -101,7 +105,7 @@ function GradeForm({ studentId, assignments = [], onAddGrade, setAssignments }) 
         </label>
       )}
 
-      {mode === "new" && (
+      {!fixedAssignment && mode === "new" && (
         <>
           <label>
             Category:
@@ -125,7 +129,8 @@ function GradeForm({ studentId, assignments = [], onAddGrade, setAssignments }) 
         </>
       )}
 
-      {mode && (
+      {/* Always show title/score inputs */}
+      {(mode || fixedAssignment) && (
         <>
           <label>
             Title:

@@ -8,13 +8,6 @@ function StudentAssignments({ match, students, setStudents, assignments, setAssi
 
   if (!student) return <p>Student not found</p>;
 
-  const studentAssignments = student.assignments || [];
-  const uniqueCategories = studentAssignments.reduce((acc, a) => {
-    if (!acc.includes(a.category)) acc.push(a.category);
-    return acc;
-  }, []);
-
-  // Update student state when a grade is added
   const handleAddGrade = (assignment, newGrade) => {
     const updatedStudents = students.map((s) => {
       if (s.id === student.id) {
@@ -24,7 +17,6 @@ function StudentAssignments({ match, students, setStudents, assignments, setAssi
           existingAssignment.grades = existingAssignment.grades || [];
           existingAssignment.grades.push(newGrade);
         } else {
-          // New assignment
           s.assignments = [...s.assignments, { ...assignment, grades: [newGrade] }];
         }
       }
@@ -37,15 +29,16 @@ function StudentAssignments({ match, students, setStudents, assignments, setAssi
     <div>
       <h2>{student.name}'s Assignments</h2>
 
-      {uniqueCategories.length > 0 ? (
+      {student.assignments.length > 0 ? (
         <ul>
-          {uniqueCategories.map((category) => (
-            <li key={category}>
-              <Link to={`/students/${student.id}/assignments/${category}`}>
-                {category}
-              </Link>
-            </li>
-          ))}
+          {student.assignments.map((assignment) => (
+              <li key={assignment.id}>
+                <Link to={`/students/${student.id}/assignments/${assignment.id}`}>
+                  {assignment.category}
+                </Link>
+              </li>
+            ))
+          }
         </ul>
       ) : (
         <p>No assignments found.</p>
