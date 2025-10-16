@@ -8,6 +8,7 @@ function StudentAssignments({ match, students, setStudents, assignments, setAssi
 
   if (!student) return <p>Student not found</p>;
 
+  // Update student state when a grade is added
   const handleAddGrade = (assignment, newGrade) => {
     const updatedStudents = students.map((s) => {
       if (s.id === student.id) {
@@ -17,6 +18,7 @@ function StudentAssignments({ match, students, setStudents, assignments, setAssi
           existingAssignment.grades = existingAssignment.grades || [];
           existingAssignment.grades.push(newGrade);
         } else {
+          // New assignment
           s.assignments = [...s.assignments, { ...assignment, grades: [newGrade] }];
         }
       }
